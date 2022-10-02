@@ -3,7 +3,7 @@ name = "elektron_sexp"
 version = "0.1.0"
 edition = "2021"
 description = "Rust parser and models for Kicad Version."
-license = "GNU LESSER GENERAL PUBLIC LICENSE"
+license = "MIT OR Apache-2.0"
 
 [lib]
 name = "elektron_sexp"
