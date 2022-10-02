@@ -4,8 +4,8 @@ pub mod pcb;
 pub mod model;
 pub mod parser;
 pub mod schema;
-mod shape;
-mod write;
+pub mod shape;
+pub mod write;
 
 macro_rules! uuid {
     () => {
