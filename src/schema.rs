@@ -17,7 +17,7 @@ use uuid::Uuid;
 
 #[derive(Default)]
 pub struct Schema {
-    pages: Vec<Page>,
+    pub pages: Vec<Page>,
 }
 impl Schema {
     pub fn new() -> Self {
@@ -121,38 +121,13 @@ impl Schema {
         }
         Ok(())
     }
-    /* ///plot the schema.
-    pub fn plot(&self, filename: &str, scale: f64, border: bool, theme: &str) -> Result<(), Error> {
-        let image_type = if filename.ends_with(".svg") {
-            ImageType::Svg
-        } else if filename.ends_with(".png") {
-            ImageType::Png
-        } else {
-            ImageType::Pdf
-        };
-        let theme = if theme == "mono" {
-            Theme::mono()
-        } else {
-            Theme::kicad_2000()
-        };
-
-        use crate::plot::{PlotIterator, Plotter};
-        for i in 0..self.pages() { //TODO: iterate page directly
-            let iter = self.iter(i)?.plot(self, &self.pages[i].title_block, self.pages[i].paper_size.clone().into(), &theme, border).flatten().collect(); //TODO: plot all, remove clone
-            let mut cairo = CairoPlotter::new(&iter);
-            check_directory(filename)?;
-            let out: Box<dyn Write> = Box::new(File::create(filename)?);
-            cairo.plot(out, border, scale, &image_type)?;
-        }
-        Ok(())
-    } */
 }
 
 pub struct Page {
     filename: String,
     uuid: String,
-    paper_size: PaperSize,
-    title_block: Option<TitleBlock>,
+    pub paper_size: PaperSize,
+    pub title_block: Option<TitleBlock>,
     elements: Vec<SchemaElement>,
     pub libraries: Vec<LibrarySymbol>,
     sheet_instances: Vec<SheetInstance>,
