@@ -4,7 +4,7 @@ use crate::error::Error;
 
 use super::model::{
     Bus, BusEntry, Effects, Footprint, FpArc, FpCircle, FpLine, FpText, GlobalLabel, GrLine,
-    GrText, HierarchicalLabel, Junction, Label, Layers, LibrarySymbol, Model, Net, NoConnect, Pad,
+    GrText, HierarchicalLabel, Junction, Label, Layers, LibrarySymbol, Model, NoConnect, Pad,
     Polyline, Property, Segment, Sheet, SheetInstance, Stroke, Symbol, SymbolInstance, Text,
     TitleBlock, Via, Wire, Zone,
 };

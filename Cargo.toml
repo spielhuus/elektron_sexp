@@ -1,6 +1,6 @@
 [package]
 name = "elektron_sexp"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Rust parser and models for Kicad Version."
 license = "MIT OR Apache-2.0"
@@ -8,19 +8,11 @@ license = "MIT OR Apache-2.0"
 [lib]
 name = "elektron_sexp"
 
-# [profile.release]
-# # or "z"
-# opt-level = "s"
-# lto = "fat"
-# codegen-units = 1
-
 [dependencies]
-thiserror = "1.0.32"
+thiserror = "1.0.37"
 lazy_static = "1.4.0"
 regex = "1.6.0"
-rust-fuzzy-search = "0.1.1"
-ndarray = "0.15.4"
-itertools = "0.10.3"
+ndarray = "0.15.6"
 diff = "0.1.13"
 
 [dependencies.uuid]

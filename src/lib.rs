@@ -1,15 +1,15 @@
-pub mod error;
-pub mod library;
-pub mod pcb;
-pub mod model;
-pub mod parser;
-pub mod schema;
-pub mod shape;
-pub mod write;
+mod error;
+mod library;
+mod pcb;
+mod model;
+mod parser;
+mod schema;
+mod shape;
+mod write;
 
-macro_rules! uuid {
-    () => {
-        Uuid::new_v4().to_string()
-    };
-}
-pub(crate) use uuid;
+pub use error::Error;
+pub use library::{Library, LibraryParser, LibraryIterator};
+pub use pcb::Pcb;
+pub use schema::{Schema, Page};
+pub use shape::{Bounds, Transform, Shape};
+pub use model::*;

@@ -9,6 +9,15 @@ use ndarray::{arr1, Array1, Array2, ArrayView};
 use lazy_static::lazy_static;
 use regex::Regex;
 
+#[macro_export]
+macro_rules! uuid {
+    () => {
+        Uuid::new_v4().to_string()
+    };
+}
+pub use uuid;
+
+#[macro_export]
 macro_rules! color {
     ($iter: expr) => {
         (
@@ -19,6 +28,7 @@ macro_rules! color {
         )
     };
 }
+pub use color;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum PaperSize {
@@ -75,7 +85,6 @@ impl std::convert::From<PaperSize> for (f64, f64) {
     }
 }
 
-pub(crate) use color;
 use uuid::Uuid;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -1439,7 +1448,7 @@ pub struct BusEntry {
 impl BusEntry {
     pub fn from<'a, I: Iterator<Item = State<'a>>>(iter: &mut I) -> Self {
         let mut at: Array1<f64> = arr1(&[0.0, 0.0]);
-        let mut angle: f64 = 0.0;
+        let angle: f64 = 0.0; //TODO: angle is not set.
         let mut size: Array1<f64> = arr1(&[0.0, 0.0]);
         let mut stroke = Stroke::new();
         let mut uuid = String::new();
@@ -2237,7 +2246,7 @@ impl Net {
                 Some(State::StartSymbol(name)) => {
                     count += 1;
                     if name == "tstamp" {
-                        let string_layers: String = iter.next().unwrap().into();
+                        // let string_layers: String = iter.next().unwrap().into();
                         tstamp = iter.next().unwrap().into();
                     } else {
                         todo!("unknown: {}", name);
@@ -2800,7 +2809,7 @@ impl Zone {
                         }
                         count -= 1;
                     } else if name == "filled_polygon" {
-                        if let Some(State::StartSymbol(name)) = iter.next() {
+                        if let Some(State::StartSymbol(_name)) = iter.next() {
                             filled_polygon.0 = iter.next().unwrap().into();
                         }
                         let mut index = 2;

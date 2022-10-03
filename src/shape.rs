@@ -62,7 +62,7 @@ impl Transform<Footprint, Array1<f64>> for Shape {
     fn transform(symbol: &Footprint, pts: &Array1<f64>) -> Array1<f64> {
         let theta = /* TODO - */ symbol.angle.to_radians();
         let rot = arr2(&[[theta.cos(), -theta.sin()], [theta.sin(), theta.cos()]]);
-        let mut verts: Array1<f64> = pts.dot(&rot);
+        let verts: Array1<f64> = pts.dot(&rot);
         //verts = verts.dot(MIRROR.get(&symbol.mirror.join("")).unwrap());
         let verts = &symbol.at + verts;
         verts.mapv_into(|v| {
