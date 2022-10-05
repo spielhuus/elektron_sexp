@@ -621,9 +621,9 @@ impl SexpWriter for Symbol {
         out.write_all(self.at.get(1).unwrap().to_string().as_bytes())?;
         out.write_all(b" ")?;
         out.write_all(self.angle.to_string().as_bytes())?;
-        if !self.mirror.is_empty() {
+        if let Some(mirror) = &self.mirror {
             out.write_all(b") (mirror ")?;
-            out.write_all(self.mirror.join(" ").as_bytes())?;
+            out.write_all(mirror.as_bytes())?;
         }
         out.write_all(b") (unit ")?;
         out.write_all(self.unit.to_string().as_bytes())?;

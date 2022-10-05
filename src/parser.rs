@@ -203,7 +203,7 @@ impl<'a> Iterator for SexpIter<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::{SexpParser, State};
+    use crate::{parser::{SexpParser, State}, Pcb};
 
     #[test]
     fn check_index() {
@@ -535,5 +535,10 @@ mod tests {
             }
         }
         assert_eq!(count, 1);
+    }
+    #[test]
+    fn parse_panel() {
+        let doc = Pcb::load("files/panel.kicad_pcb").unwrap();
+        // assert_eq!(2, doc.pages());
     }
 }

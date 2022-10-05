@@ -26,7 +26,9 @@ impl Transform<Symbol, Array2<f64>> for Shape {
         let theta = -symbol.angle.to_radians();
         let rot = arr2(&[[theta.cos(), -theta.sin()], [theta.sin(), theta.cos()]]);
         let mut verts: Array2<f64> = pts.dot(&rot);
-        verts = verts.dot(MIRROR.get(&symbol.mirror.join("")).unwrap());
+        if let Some(mirror) = &symbol.mirror {
+            verts = verts.dot(MIRROR.get(mirror).unwrap());
+        }
         let verts = &symbol.at + verts;
         verts.mapv_into(|v| format!("{:.2}", v).parse::<f64>().unwrap())
     }
@@ -36,7 +38,9 @@ impl Transform<Symbol, Array1<f64>> for Shape {
         let theta = -symbol.angle.to_radians();
         let rot = arr2(&[[theta.cos(), -theta.sin()], [theta.sin(), theta.cos()]]);
         let mut verts: Array1<f64> = pts.dot(&rot);
-        verts = verts.dot(MIRROR.get(&symbol.mirror.join("")).unwrap());
+        if let Some(mirror) = &symbol.mirror {
+            verts = verts.dot(MIRROR.get(mirror).unwrap());
+        }
         let verts = &symbol.at + verts;
         verts.mapv_into(|v| {
             let res = format!("{:.2}", v).parse::<f64>().unwrap();

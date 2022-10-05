@@ -826,7 +826,7 @@ pub struct Symbol {
     pub lib_id: String,
     pub at: Array1<f64>,
     pub angle: f64,
-    pub mirror: Vec<String>,
+    pub mirror: Option<String>,
     pub unit: u32,
     pub in_bom: bool,
     pub on_board: bool,
@@ -841,7 +841,7 @@ impl Symbol {
         lib_id: String,
         at: Array1<f64>,
         angle: f64,
-        mirror: Vec<String>,
+        mirror: Option<String>,
         unit: u32,
         in_bom: bool,
         on_board: bool,
@@ -878,7 +878,7 @@ impl Symbol {
             lib_id: library.lib_id.clone(),
             at: at.clone(),
             angle,
-            mirror: Vec::new(),
+            mirror: None,
             unit,
             in_bom: true,
             on_board: true,
@@ -933,7 +933,7 @@ impl Symbol {
         let mut lib_id: String = String::new();
         let mut at: Array1<f64> = arr1(&[0.0, 0.0]);
         let mut angle: f64 = 0.0;
-        let mut mirror: Vec<String> = Vec::new();
+        let mut mirror: Option<String> = None;
         let mut unit: u32 = 0;
         let mut in_bom: bool = false;
         let mut on_board: bool = false;
@@ -954,7 +954,7 @@ impl Symbol {
                         angle = iter.next().unwrap().into();
                     } else if name == "mirror" {
                         while let Some(State::Values(value)) = iter.next() {
-                            mirror.push(value.to_string());
+                            mirror = Some(value.to_string());
                         }
                         count -= 1;
                     } else if name == "unit" {
@@ -1265,17 +1265,6 @@ impl LibrarySymbol {
         Err(Error::PinNotFound(number))
     }
     /// Get all the pins of a library symbol.
-    /* pub fn get_pins(symbol: &LibrarySymbol, number: i32) -> Result<Vec<&Pin>, Error> {
-        let mut result = Vec::new();
-        for s in &symbol.symbols {
-            if s.unit == number {
-                for p in &s.pin {
-                    result.push(p);
-                }
-            }
-        }
-        Ok(result)
-    } */
     pub fn pins(&self, unit: u32) -> Result<Vec<&Pin>, Error> {
         let mut items: Vec<&Pin> = Vec::new();
         for _unit in &self.symbols {
@@ -2551,7 +2540,11 @@ impl GrText {
                         layer = iter.next().unwrap().into();
                     } else if name == "at" {
                         at = arr1(&[iter.next().unwrap().into(), iter.next().unwrap().into()]);
-                        angle = iter.next().unwrap().into();
+                        if let State::Values(val) = iter.next().unwrap() {
+                            angle = val.parse::<f64>().unwrap();
+                        } else {
+                            count -= 1;
+                        }
                     } else if name == "effects" {
                         effects = Effects::from(iter);
                         count -= 1;
@@ -2701,6 +2694,7 @@ impl Segment {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Zone {
     pub layer: String,
+    pub layers: Vec<String>,
     pub net: u32,
     pub net_name: String,
     pub tstamp: String,
@@ -2713,10 +2707,12 @@ pub struct Zone {
     pub fill_thermal_bridge: f64,
     pub polygon: Array2<f64>,
     pub filled_polygon: (String, Array2<f64>),
+    pub keepout: Option<Keepout>,
 }
 impl Zone {
     pub fn from<'a, I: Iterator<Item = State<'a>>>(iter: &mut I) -> Self {
         let mut layer = String::new();
+        let mut layers = Vec::new();
         let mut net = 0;
         let mut net_name = String::new();
         let mut tstamp = String::new();
@@ -2729,6 +2725,7 @@ impl Zone {
         let mut fill_thermal_bridge: f64 = 0.0;
         let mut polygon: Array2<f64> = Array2::zeros((0, 2));
         let mut filled_polygon = (String::new(), Array2::zeros((0, 2)));
+        let mut keepout = None;
         let mut count = 1;
         loop {
             match iter.next() {
@@ -2736,6 +2733,15 @@ impl Zone {
                     count += 1;
                     if name == "layer" {
                         layer = iter.next().unwrap().into();
+                    } else if name == "layers" {
+                        loop {
+                            if let Some(State::Values(value)) = iter.next() {
+                                layers.push(value.to_string());
+                            } else {
+                                count -= 1;
+                                break;
+                            }
+                        }
                     } else if name == "net" {
                         net = iter.next().unwrap().into();
                     } else if name == "net_name" {
@@ -2755,7 +2761,6 @@ impl Zone {
                                 break;
                             }
                         }
-                        count += 1;
                     } else if name == "connect_pads" {
                         if let Some(State::StartSymbol(name)) = iter.next() {
                             if name == "clearance" {
@@ -2768,24 +2773,28 @@ impl Zone {
                     } else if name == "min_thickness" {
                         min_thickness = iter.next().unwrap().into();
                     } else if name == "fill" {
-                        let fill_string: String = iter.next().unwrap().into();
-                        filled = fill_string == "yes";
-                        if let Some(State::StartSymbol(name)) = iter.next() {
-                            if name == "thermal_gap" {
-                                fill_thermal_gap = iter.next().unwrap().into();
-                            } else {
-                                todo!("other start symbol in fill thermal gap: {}", name);
+                        let mut inner_count = 1;
+                        loop {
+                            let state = iter.next().unwrap();
+                            if let State::StartSymbol(name) = state {
+                                inner_count += 1;
+                                if name == "thermal_gap" {
+                                    fill_thermal_gap = iter.next().unwrap().into();
+                                } else if name == "thermal_bridge_width" {
+                                    fill_thermal_bridge = iter.next().unwrap().into();
+                                } else {
+                                    todo!("other start symbol in fill: {}", name);
+                                }
+                            } else if let State::Values(val) = state {
+                                filled = val == "yes";
+                            } else if let State::EndSymbol = state {
+                                inner_count -= 1;
+                                if inner_count == 0 {
+                                    count -= 1;
+                                    break;
+                                }
                             }
                         }
-                        iter.next();
-                        if let Some(State::StartSymbol(name)) = iter.next() {
-                            if name == "thermal_bridge_width" {
-                                fill_thermal_bridge = iter.next().unwrap().into();
-                            } else {
-                                todo!("other start symbol in fill thermal gap: {}", name);
-                            }
-                        }
-                        count += 1;
                     } else if name == "polygon" {
                         let mut index = 1;
                         loop {
@@ -2803,11 +2812,11 @@ impl Zone {
                             } else if let Some(State::EndSymbol) = state {
                                 index -= 1;
                                 if index == 0 {
+                                    count -= 1;
                                     break;
                                 }
                             }
                         }
-                        count -= 1;
                     } else if name == "filled_polygon" {
                         if let Some(State::StartSymbol(_name)) = iter.next() {
                             filled_polygon.0 = iter.next().unwrap().into();
@@ -2834,6 +2843,9 @@ impl Zone {
                             }
                         }
                         count -= 1;
+                    } else if name == "keepout" {
+                        keepout = Some(Keepout::from(iter));
+                        count -= 1;
                     } else {
                         todo!("unknown: {}", name);
                     }
@@ -2846,6 +2858,7 @@ impl Zone {
                     if count == 0 {
                         return Self {
                             layer,
+                            layers,
                             net,
                             net_name,
                             tstamp,
@@ -2858,6 +2871,68 @@ impl Zone {
                             fill_thermal_bridge,
                             polygon,
                             filled_polygon,
+                            keepout,
+                        };
+                    }
+                }
+                _ => {}
+            }
+        }
+        panic!();
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Keepout {
+    pub tracks: bool,
+    pub vias: bool,
+    pub pads: bool,
+    pub copperpour: bool,
+    pub footprints: bool,
+}
+impl Keepout {
+    pub fn from<'a, I: Iterator<Item = State<'a>>>(iter: &mut I) -> Self {
+        let mut tracks = false;
+        let mut vias = false;
+        let mut pads = false;
+        let mut copperpour = false;
+        let mut footprints = false;
+        let mut count = 1;
+        loop {
+            match iter.next() {
+                Some(State::StartSymbol(name)) => {
+                    count += 1;
+                    if name == "tracks" {
+                        let allowed: String = iter.next().unwrap().into();
+                        tracks = allowed == "allowed";
+                    } else if name == "vias" {
+                        let allowed: String = iter.next().unwrap().into();
+                        vias = allowed == "allowed";
+                    } else if name == "pads" {
+                        let allowed: String = iter.next().unwrap().into();
+                        pads = allowed == "allowed";
+                    } else if name == "copperpour" {
+                        let allowed: String = iter.next().unwrap().into();
+                        copperpour = allowed == "allowed";
+                    } else if name == "footprints" {
+                        let allowed: String = iter.next().unwrap().into();
+                        footprints = allowed == "allowed";
+                    } else {
+                        todo!("unknown: {}", name);
+                    }
+                }
+                None => {
+                    break;
+                }
+                Some(State::EndSymbol) => {
+                    count -= 1;
+                    if count == 0 {
+                        return Self {
+                            tracks,
+                            vias,
+                            pads,
+                            copperpour,
+                            footprints,
                         };
                     }
                 }

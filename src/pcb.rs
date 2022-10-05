@@ -30,31 +30,6 @@ impl Pcb {
             title_block: TitleBlock::new(),
         }
     }
-    /* ///plot the pcb.
-    pub fn plot(&self, filename: &str, scale: f64, border: bool, theme: &str) -> Result<(), Error> {
-        let image_type = if filename.ends_with(".svg") {
-            ImageType::Svg
-        } else if filename.ends_with(".png") {
-            ImageType::Png
-        } else {
-            ImageType::Pdf
-        };
-        let theme = if theme == "mono" {
-            Theme::mono()
-        } else {
-            Theme::kicad_2000()
-        };
-
-        use crate::plot::{PcbPlotIterator, Plotter};
-        let iter = self.iter()?.plot(self, theme, border).flatten().collect(); //TODO: plot all
-                                                                               //pages
-        let mut cairo = CairoPlotter::new(&iter); //TODO: set title block
- 
-        check_directory(filename)?;
-        let out: Box<dyn Write> = Box::new(File::create(filename)?);
-        cairo.plot(out, border, scale, &image_type)?;
-        Ok(())
-    } */
     pub fn load(filename: &str) -> Result<Self, Error> {
         let doc = SexpParser::load(filename)?;
         Self::parse(doc.iter())
