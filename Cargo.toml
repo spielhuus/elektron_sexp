@@ -1,6 +1,6 @@
 [package]
 name = "elektron_sexp"
-version = "0.1.7"
+version = "0.1.12"
 edition = "2021"
 description = "Rust parser and models for Kicad Version."
 license = "MIT OR Apache-2.0"
