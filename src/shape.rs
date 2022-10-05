@@ -11,7 +11,6 @@ lazy_static! {
         (String::from(""), arr2(&[[1., 0.], [0., -1.]])),
         (String::from("x"), arr2(&[[1., 0.], [0., 1.]])),
         (String::from("y"), arr2(&[[-1., 0.], [0., -1.]])),
-        (String::from("xy"), arr2(&[[0., 0.], [0., 0.]]))
     ]);
 }
 
@@ -26,9 +25,11 @@ impl Transform<Symbol, Array2<f64>> for Shape {
         let theta = -symbol.angle.to_radians();
         let rot = arr2(&[[theta.cos(), -theta.sin()], [theta.sin(), theta.cos()]]);
         let mut verts: Array2<f64> = pts.dot(&rot);
-        if let Some(mirror) = &symbol.mirror {
-            verts = verts.dot(MIRROR.get(mirror).unwrap());
-        }
+        verts = if let Some(mirror) = &symbol.mirror {
+            verts.dot(MIRROR.get(mirror).unwrap())
+        } else {
+            verts.dot(MIRROR.get(&String::new()).unwrap())
+        };
         let verts = &symbol.at + verts;
         verts.mapv_into(|v| format!("{:.2}", v).parse::<f64>().unwrap())
     }
@@ -38,9 +39,11 @@ impl Transform<Symbol, Array1<f64>> for Shape {
         let theta = -symbol.angle.to_radians();
         let rot = arr2(&[[theta.cos(), -theta.sin()], [theta.sin(), theta.cos()]]);
         let mut verts: Array1<f64> = pts.dot(&rot);
-        if let Some(mirror) = &symbol.mirror {
-            verts = verts.dot(MIRROR.get(mirror).unwrap());
-        }
+        verts = if let Some(mirror) = &symbol.mirror {
+            verts.dot(MIRROR.get(mirror).unwrap())
+        } else {
+            verts.dot(MIRROR.get(&String::new()).unwrap())
+        };
         let verts = &symbol.at + verts;
         verts.mapv_into(|v| {
             let res = format!("{:.2}", v).parse::<f64>().unwrap();
