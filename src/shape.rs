@@ -93,22 +93,29 @@ impl Bounds<Array2<f64>> for Symbol {
             if self.unit == symbol.unit || symbol.unit == 0 {
                 let mut array = Vec::new();
                 let mut rows: usize = 0;
-                for element in &symbol.graph {
-                    match element {
-                        Graph::Polyline(polyline) => {
-                            for row in polyline.pts.rows() {
-                                let x = row[0];
-                                let y = row[1];
-                                array.extend_from_slice(&[x, y]);
-                                rows += 1;
+                if !symbol.graph.is_empty() {
+                    for element in &symbol.graph {
+                        match element {
+                            Graph::Polyline(polyline) => {
+                                for row in polyline.pts.rows() {
+                                    let x = row[0];
+                                    let y = row[1];
+                                    array.extend_from_slice(&[x, y]);
+                                    rows += 1;
+                                }
                             }
+                            Graph::Rectangle(rectangle) => {
+                                array.extend_from_slice(&[rectangle.start[0], rectangle.start[1]]);
+                                array.extend_from_slice(&[rectangle.end[0], rectangle.end[1]]);
+                                rows += 2;
+                            }
+                            _ => {} //TODO: implement
                         }
-                        Graph::Rectangle(rectangle) => {
-                            array.extend_from_slice(&[rectangle.start[0], rectangle.start[1]]);
-                            array.extend_from_slice(&[rectangle.end[0], rectangle.end[1]]);
-                            rows += 2;
-                        }
-                        _ => {} //TODO: implement
+                    }
+                } else {
+                    for pin in &symbol.pin {
+                        array.extend_from_slice(&[pin.at[0], pin.at[1]]);
+                        rows += 1;
                     }
                 }
                 if rows > 0 {
@@ -141,5 +148,30 @@ impl Bounds<Array2<f64>> for Symbol {
             }
         }
         Ok(boundery)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use ndarray::arr2;
+
+    use crate::Schema;
+    use super::Bounds;
+
+    #[test]
+    fn shape_opamp_a() {
+        let doc = Schema::load("files/opamp.kicad_sch").unwrap();
+        let symbol = doc.get_symbol("U1", 1).unwrap();
+        let lib_symbol = doc.get_library("Amplifier_Operational:TL072").unwrap();
+        let size = symbol.bounds(lib_symbol).unwrap();
+        assert_eq!(arr2(&[[-5.08, -5.08], [5.08, 5.08]]), size)
+    }
+    #[test]
+    fn shape_opamp_c() {
+        let doc = Schema::load("files/opamp.kicad_sch").unwrap();
+        let symbol = doc.get_symbol("U1", 3).unwrap();
+        let lib_symbol = doc.get_library("Amplifier_Operational:TL072").unwrap();
+        let size = symbol.bounds(lib_symbol).unwrap();
+        assert_eq!(arr2(&[[-2.54, -7.62], [-2.54, 7.62]]), size)
     }
 }
