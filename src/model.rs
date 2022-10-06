@@ -487,6 +487,12 @@ pub struct NoConnect {
     pub uuid: String,
 }
 impl NoConnect {
+    pub fn new(at: Array1<f64>, uuid: String) -> Self {
+        Self {
+            at,
+            uuid,
+        }
+    }
     pub fn from<'a, I: Iterator<Item = State<'a>>>(iter: &mut I) -> Self {
         let mut at: Array1<f64> = arr1(&[0.0, 0.0]);
         let mut uuid: String = String::new();
