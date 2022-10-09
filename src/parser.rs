@@ -538,7 +538,7 @@ mod tests {
     }
     #[test]
     fn parse_panel() {
-        let doc = Pcb::load("files/panel.kicad_pcb").unwrap();
+        let _doc = Pcb::load("files/panel.kicad_pcb").unwrap();
         // assert_eq!(2, doc.pages());
     }
 }

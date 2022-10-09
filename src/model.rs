@@ -1281,7 +1281,7 @@ impl LibrarySymbol {
             }
         }
         if items.is_empty() {
-            Err(Error::NoPinsFound(self.lib_id.clone(), unit as u32)) //TODO: remove cast.
+            Err(Error::NoPinsFound(self.lib_id.clone(), unit))
         } else {
             Ok(items)
         }
@@ -1974,7 +1974,7 @@ pub struct FpText {
     pub key: String,
     pub value: String,
     pub at: Array1<f64>,
-    pub angle: f64,
+    pub angle: Option<f64>,
     pub layer: String,
     pub effects: Effects,
     pub hidden: bool,
@@ -1986,7 +1986,7 @@ impl FpText {
         let value = iter.next().unwrap().into();
         let mut layer = String::new();
         let mut at = arr1(&[0.0, 0.0]);
-        let mut angle = -1.0;
+        let mut angle = None;
         let mut effects = Effects::new();
         let mut hidden = false;
         let mut tstamp = String::new();
@@ -2000,7 +2000,7 @@ impl FpText {
                     } else if name == "at" {
                         at = arr1(&[iter.next().unwrap().into(), iter.next().unwrap().into()]);
                         if let Some(State::Values(a)) = iter.next() {
-                            angle = a.parse::<f64>().unwrap();
+                            angle = Some(a.parse::<f64>().unwrap());
                         } else {
                             count -= 1;
                         }

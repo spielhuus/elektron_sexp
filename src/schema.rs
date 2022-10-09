@@ -428,15 +428,13 @@ mod tests {
         for diff in diff::lines(left.as_str(), right.as_str()) {
             match diff {
                 diff::Result::Left(l) => {
-                    if !l.is_empty() && l != "(kicad_sch (version 20211123) (generator eeschema)" {
-                        assert!(false, "-'{}'", l);
+                    if !l.is_empty() {
+                        assert_eq!("(kicad_sch (version 20211123) (generator eeschema)", l);
                     }
                 }
                 diff::Result::Both(_, _) => {}
                 diff::Result::Right(r) => {
-                    if r != "(kicad_sch (version 20211123) (generator elektron)" {
-                        assert!(false, "+'{}'", r);
-                    }
+                    assert_eq!("(kicad_sch (version 20211123) (generator elektron)", r);
                 }
             }
         }
@@ -446,14 +444,14 @@ mod tests {
         for diff in diff::lines(left.as_str(), right.as_str()) {
             match diff {
                 diff::Result::Left(l) => {
-                    if !l.is_empty() && l != "(kicad_sch (version 20211123) (generator eeschema)" {
-                        assert!(false, "-'{}'", l);
+                    if !l.is_empty() {
+                        assert_eq!("(kicad_sch (version 20211123) (generator eeschema)", l);
                     }
                 }
                 diff::Result::Both(_, _) => {}
                 diff::Result::Right(r) => {
-                    if r != "(kicad_sch (version 20211123) (generator elektron)" {
-                        assert!(false, "+'{}'", r);
+                    if !r.is_empty() {
+                        assert_eq!("(kicad_sch (version 20211123) (generator elektron)", r);
                     }
                 }
             }

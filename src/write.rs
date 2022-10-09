@@ -788,9 +788,9 @@ impl SexpWriter for FpText {
         out.write_all(self.at.get(0).unwrap().to_string().as_bytes())?;
         out.write_all(b" ")?;
         out.write_all(self.at.get(1).unwrap().to_string().as_bytes())?;
-        if self.angle != -1.0 {
+        if let Some(angle) = self.angle {
             out.write_all(b" ")?;
-            out.write_all(self.angle.to_string().as_bytes())?;
+            out.write_all(angle.to_string().as_bytes())?;
         }
         out.write_all(b") (layer \"")?;
         out.write_all(self.layer.as_bytes())?;
